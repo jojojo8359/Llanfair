@@ -9,6 +9,11 @@ public class Category
     private String name = "";
     private String id = "";
 
+    public Category() {
+        this.name = "";
+        this.id = "";
+    }
+
     public Category(String name, String id)
     {
         this.name = name;

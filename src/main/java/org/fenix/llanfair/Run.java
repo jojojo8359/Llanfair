@@ -106,7 +106,7 @@ public class Run implements TableModel, Serializable {
 
 	public static final String COMPLETED_ATTEMPT_COUNTER_PROPERTY = "run.completedAttemptCounter";
 
-	public static final String RECORD_CATEGORY_PROPERTY = "run.record.category";
+	public static final String RECORD_CATEGORY_PROPERTY = "run.recordCategory";
 
 	public static final String DELAYED_START_PROPERTY = "run.delayedStart";
 
