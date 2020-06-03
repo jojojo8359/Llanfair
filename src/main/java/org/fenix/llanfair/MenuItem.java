@@ -33,7 +33,9 @@ enum MenuItem implements ActionListener {
 	LOCK( false, State.NULL, State.READY, State.STOPPED, State.ONGOING ),
 	UNLOCK( false, State.NULL, State.READY, State.STOPPED, State.ONGOING ),
 	RESIZE_DEFAULT( false, State.NULL, State.READY ),
-	RESIZE_PREFERRED( true, State.NULL, State.READY ),
+	RESIZE_PREFERRED( false, State.NULL, State.READY ),
+	START_SERVER(false, State.READY),
+	STOP_SERVER(true, State.READY),
 	SETTINGS( true, State.NULL, State.READY, State.STOPPED ),
 	ABOUT( true, State.NULL, State.READY, State.STOPPED, State.ONGOING ),
 	EXIT( false, State.NULL, State.READY, State.STOPPED, State.ONGOING );
@@ -74,6 +76,9 @@ enum MenuItem implements ActionListener {
 		// LOCK & UNLOCK mask each other and Llanfair always start unlocked
 		if ( name().equals( "UNLOCK" ) ) {
 			menuItem.setVisible( false );
+		}
+		if(name().equals("STOP_SERVER")) {
+			menuItem.setVisible(false);
 		}
 	}
 
@@ -201,6 +206,15 @@ enum MenuItem implements ActionListener {
 			LOCK.menuItem.setVisible( true );
 			UNLOCK.menuItem.setVisible( false );
 		}
+
+		if(source.equals(START_SERVER.menuItem)) {
+			START_SERVER.menuItem.setVisible(false);
+			STOP_SERVER.menuItem.setVisible(true);
+		} else if(source.equals(STOP_SERVER.menuItem)) {
+			START_SERVER.menuItem.setVisible(true);
+			STOP_SERVER.menuItem.setVisible(false);
+		}
+
 
 		JMenuItem jmi = ( JMenuItem ) source;
 		String name = jmi.getName();

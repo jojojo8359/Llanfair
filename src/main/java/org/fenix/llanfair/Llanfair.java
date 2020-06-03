@@ -77,6 +77,7 @@ public class Llanfair extends BorderlessFrame implements TableModelListener,
 	private JPopupMenu popupMenu;
 
 	private volatile boolean lockedHotkeys;
+	private volatile boolean serverStarted;
 	private volatile boolean ignoreNativeInputs;
 
 	private Dimension preferredSize;
@@ -113,6 +114,7 @@ public class Llanfair extends BorderlessFrame implements TableModelListener,
 		run = new Run();
 		runPane = null;
 		lockedHotkeys = false;
+		serverStarted = false;
 		ignoreNativeInputs = false;
 		preferredSize = null;
 		actions = new Actions( this );
@@ -215,6 +217,10 @@ public class Llanfair extends BorderlessFrame implements TableModelListener,
 			setLocation( location );
 		}
 	}
+
+	public synchronized boolean isServerStarted() {return serverStarted;}
+
+	public synchronized void setServerStarted(boolean serverStarted) {this.serverStarted = serverStarted;}
 
 	public synchronized boolean areHotkeysLocked() {
 		return lockedHotkeys;

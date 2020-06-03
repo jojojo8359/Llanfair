@@ -142,6 +142,10 @@ final class Actions {
 			master.setLockedHotkeys(true);
 		} else if ( source == MenuItem.UNLOCK ) {
 			master.setLockedHotkeys(false);
+		} else if ( source == MenuItem.START_SERVER ) {
+			startServer();
+		} else if ( source == MenuItem.STOP_SERVER) {
+			stopServer();
 		} else if ( source == MenuItem.SETTINGS ) {
 			EditSettings dialog = new EditSettings(master);
 			dialog.display( true, master );
@@ -485,5 +489,17 @@ final class Actions {
 		}
 		*/
 		dialog.display();
+	}
+
+	private void startServer() {
+		master.setServerStarted(true);
+		System.out.println("Server started");
+		// Start server thread here
+	}
+
+	private void stopServer() {
+		master.setServerStarted(false);
+		System.out.println("Server stopped");
+		// Stop server thread here
 	}
 }

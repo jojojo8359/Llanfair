@@ -138,6 +138,8 @@ public enum Language {
 	menuItem_unlock,
 	menuItem_resize_default,
 	menuItem_resize_preferred,
+	menuItem_start_server,
+	menuItem_stop_server,
 	menuItem_settings,
 	menuItem_about,
 	menuItem_exit,
