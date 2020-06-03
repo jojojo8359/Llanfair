@@ -6,6 +6,7 @@ import org.fenix.llanfair.config.Settings;
 import org.fenix.llanfair.dialog.EditRun;
 import org.fenix.llanfair.dialog.EditSettings;
 import org.fenix.llanfair.extern.WSplit;
+import org.fenix.llanfair.server.ServerEvent;
 import org.fenix.utils.UserSettings;
 import org.fenix.utils.about.AboutDialog;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -165,23 +166,59 @@ final class Actions {
 		}
 	}
 
+	void processServerEvent(ServerEvent event) {
+		Run run = master.getRun();
+		Run.State state = run.getState();
+
+		switch(event.getAction()) {
+			case START:
+			case SPLIT:
+				split(event.getNanoTime() / 100000L);
+				break;
+			case PAUSE:
+				if (state == Run.State.ONGOING)
+					run.pause(event.getNanoTime() / 100000L);
+				break;
+			case RESUME:
+				if (state == Run.State.PAUSED)
+					run.resume(event.getNanoTime() / 100000L);
+				break;
+			case END:
+				if (state == Run.State.ONGOING)
+					run.stop();
+				break;
+			case RESET:
+				reset();
+				break;
+			case RESTART: // Just in case
+				if (state == Run.State.ONGOING)
+					run.stop();
+				reset();
+				split(event.getNanoTime() / 100000L);
+		}
+	}
+
 	/**
 	 * Performs a split or starts the run if it is ready. Can also resume a
 	 * paused run in case the run is segmented.
 	 */
 	private void split() {
+		split(System.nanoTime() / 1000000L);
+	}
+
+	private void split(long nanoTime) {
 		Run run = master.getRun();
 		Run.State state = run.getState();
 		if ( state == Run.State.ONGOING ) {
-			long milli = System.nanoTime() / 1000000L;
+			long milli = nanoTime;
 			long start = run.getSegment( run.getCurrent() ).getStartTime();
 			if ( milli - start > GHOST_DELAY ) {
-				run.split();
+				run.split(nanoTime);
 			}
 		} else if ( state == Run.State.READY ) {
-			run.start();
+			run.start(nanoTime);
 		} else if ( state == Run.State.PAUSED && run.isSegmented() ) {
-			run.resume();
+			run.resume(nanoTime);
 		}
 	}
 
@@ -494,7 +531,7 @@ final class Actions {
 	private void startServer() {
 		master.setServerStarted(true);
 		System.out.println("Server started");
-		// Start server thread here
+		// Start server thread here (pass THIS in in order to call processServerEvent)
 	}
 
 	private void stopServer() {

@@ -753,10 +753,14 @@ public class Run implements TableModel, Serializable {
 	 * @throws  IllegalStateException   if the run is on-going or null.
 	 */
 	public void start() {
+		start(System.nanoTime() / 1000000L);
+	}
+
+	public void start(long nanoTime) {
 		if (state == null || state == State.ONGOING) {
 			throw new IllegalStateException("illegal state to start");
 		}
-		startTime = (System.nanoTime() / 1000000L) + delayedStart;
+		startTime = nanoTime + delayedStart;
 		current   = 0;
 		state     = State.ONGOING;
 		segments.get(current).setStartTime(startTime);
@@ -777,10 +781,14 @@ public class Run implements TableModel, Serializable {
 	 * @throws  IllegalStateException   if the run is not on-going.
 	 */
 	public void split() {
+		split(System.nanoTime() / 1000000L);
+	}
+
+	public void split(long nanoTime) {
 		if (state != State.ONGOING) {
 			throw new IllegalStateException("run is not on-going");
 		}
-		long stopTime    = System.nanoTime() / 1000000L;
+		long stopTime    = nanoTime;
 		long segmentTime = stopTime - getSegment(current).getStartTime();
 		current          = current + 1;
 
@@ -829,11 +837,15 @@ public class Run implements TableModel, Serializable {
 	}
 
 	public void pause() {
+		pause(System.nanoTime() / 1000000L);
+	}
+
+	public void pause(long nanoTime) {
 		if (state != State.ONGOING) {
 			throw new IllegalStateException("run is not on-going");
 		}
 		state = State.PAUSED;
-		long stopTime    = System.nanoTime() / 1000000L;
+		long stopTime    = nanoTime;
 		long segmentTime = stopTime - getSegment(current).getStartTime();
 		Time time        = new Time(segmentTime);
 		segments.get(current).setTime(time, Segment.LIVE, true);
@@ -841,11 +853,15 @@ public class Run implements TableModel, Serializable {
 	}
 
 	public void resume() {
+		resume(System.nanoTime() / 1000000L);
+	}
+
+	public void resume(long nanoTime) {
 		if (state != State.PAUSED) {
 			throw new IllegalStateException("run is not paused");
 		}
 		state     = State.ONGOING;
-		long stop = System.nanoTime() / 1000000L;
+		long stop = nanoTime;
 		startTime = stop - getTime(current, Segment.LIVE, false).getMilliseconds();
 
 		Segment crt = getSegment(current);
