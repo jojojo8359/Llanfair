@@ -27,6 +27,10 @@ $ java -jar /path/to/Llanfair.jar
 
 ## Major Changes / Fixes
 
+My changes:
+* Fixes gered's [#26](https://github.com/gered/Llanfair/issues/26) by synchronizing AWT's graphics state on every loop.
+* Fixed loading world records ([ae59e55](https://github.com/jojojo8359/Llanfair/commit/ae59e555f916e0a70c786d236ca08226d34b043b))
+
 The main changes from v1.4.3 (the last official release from Xunkar) are as follows:
 
 * Optional world record display, via run data from speedrun.com. Contributed by [4ilo](https://github.com/4ilo).
@@ -59,4 +63,5 @@ The main changes from v1.4.3 (the last official release from Xunkar) are as foll
 * Bug fixing
 * Some UI cleanups, especially in the Edit Run dialog and Settings dialog.
 * Even more font/color customization options?
+* gered's [#22](https://github.com/gered/Llanfair/issues/22) - Issues with the attempt counter
 * ...
