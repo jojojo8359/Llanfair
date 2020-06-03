@@ -1,24 +1,21 @@
 # Llanfair
 
-**This project is not maintained anymore. I have not speedrun anything in over a year, and while I once thought I might come back to it again, that is highly unlikely to be the case anymore.**
-
 ---
 
-[From the homepage](http://jenmaarai.com/llanfair/en/):
+[From the (dead) homepage](http://jenmaarai.com/llanfair/en/):
 
 > Llanfair is a free software that helps speedrunners keep track of their run. Released in August 2012, its capacity for customization and its portability allowed it to garner some recognition in the scene. Developed in Java, Llanfair can run on Windows, MacOS, or Unix.
 
-The original author Xavier "Xunkar" Sencert was kind enough to release the sources 
-(see [here](https://twitter.com/Xunkar/status/671042537134624768) and [here](https://twitter.com/Xunkar/status/671099823563632641))
-when I asked. Here I will be extending the original application as best I can by adding some missing features here and 
-there and fixing bugs as needed.
+This version is a fork of [gered's](https://github.com/gered) [fork](https://github.com/gered/Llanfair). This version aims to fix some bugs in his fork, as well as add support for auto-splitting in source games using my [fork](https://github.com/jojojo8359/SourceAutoRecord) of [SourceAutoRecord](https://github.com/NeKzor/SourceAutoRecord), a speedrunning plugin for Source engine games (e.g. Portal, Portal 2, Half-Life 2, & The Stanley Parable).
 
-Note that Xunkar has started working on Llanfair v2.0 which is a complete rewrite. You can 
-[check it's progress here](https://github.com/xunkar/llanfair).
+From gered's fork:
+>The original author Xavier "Xunkar" Sencert was kind enough to release the sources (see [here](https://twitter.com/Xunkar/status/671042537134624768) and [here](https://twitter.com/Xunkar/status/671099823563632641)) when I asked. Here I will be extending the original application as best I can by adding some missing features here and there and fixing bugs as needed.
+>
+>Note that Xunkar has started working on Llanfair v2.0 which is a complete rewrite. You can [check it's progress here](https://github.com/xunkar/llanfair).
 
 ## Download
 
-Check the [releases page](https://github.com/gered/Llanfair/releases) for downloadable JARs. 
+Check the [releases page](https://github.com/jojojo8359/Llanfair/releases) for downloadable JARs.
 
 Llanfair requires Java 7 or later (you are encouraged to use the most recent version of Java).
 
@@ -56,53 +53,6 @@ The main changes from v1.4.3 (the last official release from Xunkar) are as foll
 * User setting to control amount of files shown in the "Open Recent" menu list.
 * Option to set a different default splits file directory (this is merely an additional convenience, most people probably won't use this).
 * Other minor bug fixes.
-
-### Important Note About Localization
-
-I've temporarily disabled localization support. Some of the strings used in Llanfair were out of sync between English
-and the other languages and I ended up adding new English strings too as I've been working on feature enhancements and
-bug fixing. I only speak English and so have no way to update the other language translations. It seemed wrong to me to 
-include an option in the app to switch languages when the other language text was incomplete, so it will remain 
-disabled until these translations are brought up to date again (which will have to be done by someone else -- pull
-requests are more then welcome!).
-  
-## Building and Running
-
-You will need Gradle. Obviously any IDE with Gradle support will simply mean you can just open this project
-right away in your IDE and get developing immediately. Easy.
-
-Llanfair currently requires Java 7 or later.
-
-#### Command Line Building / Running / Distribution
-
-To build:
-
-```
-$ gradle build
-```
-
-The Gradle `application` plugin is being used, so you can run Llanfair simply by doing:
- 
-```
-$ gradle run
-```
-
-To package up a JAR file for redistribution, run:
-
-```
-$ gradle shadowJar
-```
-
-Which will spit out an "uber JAR" under `build/libs` under the naming convention `llanfair-[VERSION]-all.jar`. This
-JAR will of course work on any OS and includes all required dependencies inside it.
-
-To build a redistributable Mac app bundle (.app):
-
-```
-$ gradle createApp
-```
-
-Which will create an app bundle under `build/macApp`.
 
 ## TODO
 
