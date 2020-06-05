@@ -1,7 +1,5 @@
 # Llanfair
 
----
-
 [From the (dead) homepage](http://jenmaarai.com/llanfair/en/):
 
 > Llanfair is a free software that helps speedrunners keep track of their run. Released in August 2012, its capacity for customization and its portability allowed it to garner some recognition in the scene. Developed in Java, Llanfair can run on Windows, MacOS, or Unix.
