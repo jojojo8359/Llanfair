@@ -6,6 +6,8 @@ import org.fenix.llanfair.config.Settings;
 import org.fenix.llanfair.dialog.EditRun;
 import org.fenix.llanfair.dialog.EditSettings;
 import org.fenix.llanfair.extern.WSplit;
+import org.fenix.llanfair.server.Server;
+import org.fenix.llanfair.server.ServerAction;
 import org.fenix.llanfair.server.ServerEvent;
 import org.fenix.utils.UserSettings;
 import org.fenix.utils.about.AboutDialog;
@@ -28,7 +30,7 @@ import java.util.ResourceBundle;
  * @author Xavier "Xunkar" Sencert
  * @version 1.0
  */
-final class Actions {
+public final class Actions {
 
 	public enum FILE_CHOOSER_TYPE {
 		OPEN,
@@ -39,6 +41,9 @@ final class Actions {
 	private static ResourceBundle BUNDLE = null;
 
 	private Llanfair master;
+
+	private Server currentServer;
+	private Thread currentServerThread;
 
 	private File file;
 	private JFileChooser fileChooser;
@@ -139,14 +144,16 @@ final class Actions {
 			save(null);
 		} else if ( source == MenuItem.RESET ) {
 			reset();
-			} else if ( source == MenuItem.LOCK ) {
+		} else if ( source == MenuItem.LOCK ) {
 			master.setLockedHotkeys(true);
 		} else if ( source == MenuItem.UNLOCK ) {
 			master.setLockedHotkeys(false);
 		} else if ( source == MenuItem.START_SERVER ) {
 			startServer();
+//			master.setLockedHotkeys(true);
 		} else if ( source == MenuItem.STOP_SERVER) {
 			stopServer();
+//			master.setLockedHotkeys(false);
 		} else if ( source == MenuItem.SETTINGS ) {
 			EditSettings dialog = new EditSettings(master);
 			dialog.display( true, master );
@@ -156,6 +163,11 @@ final class Actions {
 			if ( confirmOverwrite() ) {
 				// these might not really be necessary, but at this point just trying to be sure a running timer isn't
 				// sometimes keeping the app open somehow ??
+				if(Llanfair.isServerStarted()) {
+					currentServer.doStop();
+					currentServer = null;
+					master.setServerStarted(false);
+				}
 				if (run.getState() == Run.State.ONGOING)
 					run.stop();
 				run.reset();
@@ -166,22 +178,25 @@ final class Actions {
 		}
 	}
 
-	void processServerEvent(ServerEvent event) {
+	public void processServerEvent(ServerEvent event) {
+		System.out.println(event);
 		Run run = master.getRun();
 		Run.State state = run.getState();
 
 		switch(event.getAction()) {
 			case START:
+				run.start(event.getNanoTime());
+				break;
 			case SPLIT:
-				split(event.getNanoTime() / 100000L);
+				split(event.getNanoTime(), false);
 				break;
 			case PAUSE:
 				if (state == Run.State.ONGOING)
-					run.pause(event.getNanoTime() / 100000L);
+					run.pause(event.getNanoTime());
 				break;
 			case RESUME:
 				if (state == Run.State.PAUSED)
-					run.resume(event.getNanoTime() / 100000L);
+					run.resume(event.getNanoTime());
 				break;
 			case END:
 				if (state == Run.State.ONGOING)
@@ -194,7 +209,7 @@ final class Actions {
 				if (state == Run.State.ONGOING)
 					run.stop();
 				reset();
-				split(event.getNanoTime() / 100000L);
+//				split(event.getNanoTime(), false);
 		}
 	}
 
@@ -203,22 +218,31 @@ final class Actions {
 	 * paused run in case the run is segmented.
 	 */
 	private void split() {
-		split(System.nanoTime() / 1000000L);
+		split(System.currentTimeMillis(), true);
 	}
 
-	private void split(long nanoTime) {
+	private void split(long nanoTime, boolean keyInput) {
 		Run run = master.getRun();
 		Run.State state = run.getState();
 		if ( state == Run.State.ONGOING ) {
 			long milli = nanoTime;
 			long start = run.getSegment( run.getCurrent() ).getStartTime();
-			if ( milli - start > GHOST_DELAY ) {
+			if ( keyInput && milli - start > GHOST_DELAY ) {
 				run.split(nanoTime);
 			}
-		} else if ( state == Run.State.READY ) {
+			else { // if(milli - start > 100L)
+				run.split(nanoTime);
+//				run.pause(nanoTime);
+			}
+		} else if ( state == Run.State.READY && keyInput ) {
 			run.start(nanoTime);
-		} else if ( state == Run.State.PAUSED && run.isSegmented() ) {
+		} else if ( state == Run.State.PAUSED && run.isSegmented() ) { // && run.isSegmented()
 			run.resume(nanoTime);
+//			if(!keyInput) {
+//				run.resume(nanoTime - 1L);
+//				run.split(nanoTime);
+//				run.pause(nanoTime + 1L);
+//			}
 		}
 	}
 
@@ -244,7 +268,7 @@ final class Actions {
 		Run run = master.getRun();
 		Run.State state = run.getState();
 		if ( state == Run.State.ONGOING || state == Run.State.STOPPED ) {
-			long milli = System.nanoTime() / 1000000L;
+			long milli = System.currentTimeMillis();
 			if ( milli - lastUnsplit > GHOST_DELAY ) {
 				lastUnsplit = milli;
 				run.unsplit();
@@ -260,7 +284,7 @@ final class Actions {
 	private void skip() {
 		Run run = master.getRun();
 		if ( run.getState() == Run.State.ONGOING ) {
-			long milli = System.nanoTime() / 1000000L;
+			long milli = System.currentTimeMillis();
 			if ( milli - lastSkip > GHOST_DELAY ) {
 				lastSkip = milli;
 				run.skip();
@@ -529,14 +553,48 @@ final class Actions {
 	}
 
 	private void startServer() {
-		master.setServerStarted(true);
-		System.out.println("Server started");
-		// Start server thread here (pass THIS in in order to call processServerEvent)
+		if(Llanfair.isServerStarted()) {
+			System.out.println("Server is already running");
+			master.showError(Language.error_server_exists.get());
+		}
+		else {
+			currentServer = new Server(this);
+			currentServerThread = new Thread(currentServer);
+			currentServerThread.start();
+
+			System.out.println("Server started");
+			master.showMessage(Language.SERVER_STARTED.get(currentServer.getPort()));
+			master.setServerStarted(true);
+			MenuItem.START_SERVER.menuItem.setVisible(false);
+			MenuItem.STOP_SERVER.menuItem.setVisible(true);
+			// Start server thread here (pass THIS in in order to call processServerEvent)
+		}
 	}
 
 	private void stopServer() {
-		master.setServerStarted(false);
-		System.out.println("Server stopped");
-		// Stop server thread here
+		if(!Llanfair.isServerStarted()) {
+			System.out.println("Server is not running");
+			master.showError(Language.error_server_does_not_exist.get());
+		}
+		else {
+			currentServer.doStop();
+			currentServer = null;
+			currentServerThread = null;
+
+			System.out.println("Server stopped");
+			master.showMessage(Language.SERVER_STOPPED.get());
+			master.setServerStarted(false);
+			MenuItem.START_SERVER.menuItem.setVisible(true);
+			MenuItem.STOP_SERVER.menuItem.setVisible(false);
+			// Stop server thread here
+		}
+	}
+
+	public void showConnected() {
+		master.showMessage(Language.GAME_CONNECTED.get());
+	}
+
+	public void showDisconnected() {
+		master.showMessage(Language.GAME_DISCONNECTED.get());
 	}
 }

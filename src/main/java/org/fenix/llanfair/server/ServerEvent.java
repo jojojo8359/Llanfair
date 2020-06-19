@@ -9,21 +9,6 @@ public class ServerEvent {
         nanoTime = 0L;
     }
 
-    public ServerEvent(int i) {
-        switch(i) {
-            case 4:
-                action = ServerAction.END;
-                break;
-            case 5:
-                action = ServerAction.RESET;
-                break;
-            default:
-                action = ServerAction.DO_NOTHING;
-                break;
-        }
-        nanoTime = 0L;
-    }
-
     public ServerEvent(int i, long time) {
         nanoTime = time;
         switch(i) {
@@ -32,6 +17,14 @@ public class ServerEvent {
                 break;
             case 3:
                 action = ServerAction.SPLIT;
+                break;
+            case 4:
+                action = ServerAction.END;
+                nanoTime = 0L;
+                break;
+            case 5:
+                action = ServerAction.RESET;
+                nanoTime = 0L;
                 break;
             case 6:
                 action = ServerAction.PAUSE;
@@ -52,5 +45,9 @@ public class ServerEvent {
 
     public ServerAction getAction() {
         return this.action;
+    }
+
+    public String toString() {
+        return this.getAction() + " : " + this.getNanoTime();
     }
 }

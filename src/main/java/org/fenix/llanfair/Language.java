@@ -151,6 +151,8 @@ public enum Language {
 	error_window_width,
 	error_max_recent_files,
 	error_splits_path,
+	error_server_exists,
+	error_server_does_not_exist,
 
 	// Actions
 	action_accept,
@@ -202,12 +204,16 @@ public enum Language {
 	/*
 	 * Messages.
 	 */
+	GAME_CONNECTED,
+	GAME_DISCONNECTED,
 	ICON_TOO_BIG,
 	ILLEGAL_TIME,
 	ILLEGAL_SEGMENT_TIME,
 	INPUT_NAN,
 	INPUT_NEGATIVE,
 	INVALID_TIME_STAMP,
+	SERVER_STARTED,
+	SERVER_STOPPED,
 	WARN_BETTER_RUN,
 	WARN_BETTER_TIMES,
 	WARN_RESET_SETTINGS,
@@ -253,6 +259,7 @@ public enum Language {
 	IMAGE,
 	INPUTS,
 	MAX_ORDINATE,
+	MESSAGE,
 	NAME,
 	RUN_TITLE,
 	RUN_FILE_FILTER,

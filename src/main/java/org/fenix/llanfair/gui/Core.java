@@ -1,10 +1,7 @@
 package org.fenix.llanfair.gui;
 
-import org.fenix.llanfair.Language;
-import org.fenix.llanfair.Run;
+import org.fenix.llanfair.*;
 import org.fenix.llanfair.Run.State;
-import org.fenix.llanfair.Segment;
-import org.fenix.llanfair.Time;
 import org.fenix.llanfair.config.Settings;
 import org.fenix.utils.Images;
 import org.fenix.utils.gui.GBC;
@@ -296,10 +293,25 @@ class Core extends JPanel implements ActionListener {
 	 * if we’ve reached a loss of time.
 	 */
 	@Override public synchronized void actionPerformed(ActionEvent event) {
-		long now            = System.nanoTime() / 1000000L;
+		long now            = System.currentTimeMillis();
 		Segment current     = run.getSegment(run.getCurrent());
-		Time splitElapsed   = new Time(now - run.getStartTime());
-		Time segmentElapsed = new Time(now - current.getStartTime());
+
+		long pause          = run.getPauseTime();
+
+//		System.out.println("PAUSE: " + pause);
+
+		Time splitElapsed;
+		Time segmentElapsed;
+
+//		if(pause != 0L && Llanfair.isServerStarted()) {
+//			splitElapsed = new Time(now + pause - run.getStartTime());
+//			segmentElapsed = new Time(now + pause - current.getStartTime());
+//		}
+//		else {
+			splitElapsed = new Time(now - run.getStartTime());
+			segmentElapsed = new Time(now - current.getStartTime());
+//		}
+
 
 		if (splitElapsed.getMilliseconds() < 0)
 			splitTimer.setForeground(Settings.colorNegativeTime.get());
@@ -350,11 +362,15 @@ class Core extends JPanel implements ActionListener {
 	 */
 	void processPropertyChangeEvent(PropertyChangeEvent event) {
 		String property = event.getPropertyName();
+		long pause = run.getPauseTime();
 		if (Run.STATE_PROPERTY.equals(property)) {
 			updateValues(ALL);
 			updateVisibility(TIME);
 			if (run.getState().equals(State.PAUSED)) {
-				long now  = System.nanoTime() / 1000000L;
+				long now  = System.currentTimeMillis();
+//				if(pause != 0L && Llanfair.isServerStarted()) {
+//					pauseTime = new Time(now + pause - run.getStartTime());
+//				}
 				pauseTime = new Time(now - run.getStartTime());
 			} else {
 				updateColors(TIMER);
