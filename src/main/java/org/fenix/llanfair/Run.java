@@ -189,6 +189,10 @@ public class Run implements TableModel, Serializable {
 
 	private Category recordCategory;
 
+	private long pauseTime;
+
+	private long lastPauseTimeStamp;
+
 	// ----------------------------------------------------------- CONSTRUCTORS
 
 	/**
@@ -231,6 +235,10 @@ public class Run implements TableModel, Serializable {
 	public String getSubTitle() {
 		return subTitle;
 	}
+
+	public long getPauseTime() {return pauseTime;}
+
+	public long getLastPauseTimeStamp() {return lastPauseTimeStamp;}
 
 	public long getDelayedStart() {
 		return delayedStart;
@@ -351,7 +359,7 @@ public class Run implements TableModel, Serializable {
 
 	/**
 	 * Returns a portion of the registered run time to which live times should
-	 * be compared. This is equal to {@link Settings#COMPARE_PERCENT} percent of
+	 * be compared. This is equal to percent of
 	 * the whole run time. This allows for more visually detailed comparison.
 	 *
 	 * @return  {@code P%} of {@code getTime(Segment.SET)} where {@code P} is
@@ -753,13 +761,20 @@ public class Run implements TableModel, Serializable {
 	 * @throws  IllegalStateException   if the run is on-going or null.
 	 */
 	public void start() {
+		start(System.currentTimeMillis());
+	}
+
+	public void start(long nanoTime) {
+//		System.out.println("Starting run at " + nanoTime);
 		if (state == null || state == State.ONGOING) {
 			throw new IllegalStateException("illegal state to start");
 		}
-		startTime = (System.nanoTime() / 1000000L) + delayedStart;
+		startTime = nanoTime + delayedStart;
 		current   = 0;
 		state     = State.ONGOING;
 		segments.get(current).setStartTime(startTime);
+
+		pauseTime = 0L;
 
 		numberOfAttempts += 1;
 		sessionAttempts += 1;
@@ -777,10 +792,14 @@ public class Run implements TableModel, Serializable {
 	 * @throws  IllegalStateException   if the run is not on-going.
 	 */
 	public void split() {
+		split(System.currentTimeMillis());
+	}
+
+	public void split(long nanoTime) {
 		if (state != State.ONGOING) {
 			throw new IllegalStateException("run is not on-going");
 		}
-		long stopTime    = System.nanoTime() / 1000000L;
+		long stopTime    = nanoTime + pauseTime;
 		long segmentTime = stopTime - getSegment(current).getStartTime();
 		current          = current + 1;
 
@@ -829,11 +848,16 @@ public class Run implements TableModel, Serializable {
 	}
 
 	public void pause() {
+		pause(System.currentTimeMillis());
+	}
+
+	public void pause(long nanoTime) {
 		if (state != State.ONGOING) {
 			throw new IllegalStateException("run is not on-going");
 		}
 		state = State.PAUSED;
-		long stopTime    = System.nanoTime() / 1000000L;
+		long stopTime    = nanoTime;
+		lastPauseTimeStamp = nanoTime;
 		long segmentTime = stopTime - getSegment(current).getStartTime();
 		Time time        = new Time(segmentTime);
 		segments.get(current).setTime(time, Segment.LIVE, true);
@@ -841,11 +865,17 @@ public class Run implements TableModel, Serializable {
 	}
 
 	public void resume() {
+		resume(System.currentTimeMillis());
+	}
+
+	public void resume(long nanoTime) {
 		if (state != State.PAUSED) {
 			throw new IllegalStateException("run is not paused");
 		}
 		state     = State.ONGOING;
-		long stop = System.nanoTime() / 1000000L;
+		long stop = nanoTime;
+		pauseTime += nanoTime - lastPauseTimeStamp;
+		System.out.println("PAUSETIME: " + pauseTime);
 		startTime = stop - getTime(current, Segment.LIVE, false).getMilliseconds();
 
 		Segment crt = getSegment(current);
@@ -1175,6 +1205,9 @@ public class Run implements TableModel, Serializable {
 		current         = -1;
 		startTime       = 0L;
 		sessionAttempts = 0;
+
+		pauseTime = 0L;
+		lastPauseTimeStamp = 0L;
 
 		if (subTitle == null) {
 			subTitle = "";
